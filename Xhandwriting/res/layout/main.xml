@@ -10,6 +10,7 @@
         android:id="@+id/action_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="top"
         android:onClick="onClear" >
 
         <Button
@@ -17,31 +18,56 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onUndo"
-            android:text="Undo" />
+            android:text="@string/undo"
+            tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/buttonClear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClear"
-            android:text="Clear" />
+            android:text="@string/clear" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/hlayout_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="0.5" >
+
+        <FrameLayout
+            android:id="@+id/drawView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="left|center"
+            android:layout_weight="0.5" >
+        </FrameLayout>
+
+        <ListView
+            android:id="@+id/listView1"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right" >
+
+        </ListView>
 
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/drawView1"
+    <LinearLayout
+        android:id="@+id/textArea"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="0.5" >
+        android:layout_height="96dp"
+        android:layout_gravity="bottom" >
 
-    </FrameLayout>
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:ems="10" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/action_bar_height"
-        android:text="TextView"
-        android:textSize="20dp" />
+            <requestFocus />
+        </EditText>
+    </LinearLayout>
 
 </LinearLayout>

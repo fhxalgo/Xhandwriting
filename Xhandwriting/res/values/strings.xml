@@ -4,5 +4,8 @@
     <string name="app_name">Xhandwriting</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="undo">Undo</string>
+    <string name="clear">Clear</string>
+    <string name="textview">TextView</string>
 
 </resources>

@@ -1,28 +1,12 @@
 package com.example.xhandwriting;
 
-
-import hanzilookup.data.CharacterDescriptor;
-import hanzilookup.data.CharacterTypeRepository;
-import hanzilookup.data.MatcherThread;
-import hanzilookup.data.MemoryStrokesStreamProvider;
-import hanzilookup.data.StrokesDataSource;
-import hanzilookup.data.StrokesMatcher;
-import hanzilookup.data.MatcherThread.ResultsHandler;
-import hanzilookup.ui.WrittenCharacter;
-import hanzilookup.ui.WrittenCharacter.WrittenPoint;
-import hanzilookup.ui.WrittenCharacter.WrittenStroke;
-
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -39,8 +23,23 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemSelectedListener;
+
+import hanzilookup.data.CharacterDescriptor;
+import hanzilookup.data.CharacterTypeRepository;
+import hanzilookup.data.MatcherThread;
+import hanzilookup.data.MemoryStrokesStreamProvider;
+import hanzilookup.data.StrokesDataSource;
+import hanzilookup.data.StrokesMatcher;
+import hanzilookup.data.MatcherThread.ResultsHandler;
+import hanzilookup.ui.WrittenCharacter;
+
 
 public class MainActivity extends Activity implements OnTouchListener {
 
@@ -51,7 +50,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 	private Paint mPaint;
 	Path path;
 	
-	private TextView txtView;  // show list of matched words
+	private ListView listView;  // show list of matched words
+	private TextView editText;  // show added words panel
 	
 	// HanziLookup
 	// The current type of character we're looking for; set by the type radio buttons.
@@ -74,6 +74,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 	// Use a LinkedHashSet since it iterates in order.
 	private Set characterHandlers = new LinkedHashSet();
 	private List candidatesList;
+	private List<Character> list = new ArrayList<Character>();  // match list
+	private ArrayAdapter<Character> adapter;
 	
 	///// CharacterCanvas
 	// The WrittenCharacter that is operated on as mouse input is recorded.
@@ -107,13 +109,19 @@ public class MainActivity extends Activity implements OnTouchListener {
 		
 		fl.addView(dp);
 		Log.i(TAG, "added DrawPanel");
+				
+		adapter = new ArrayAdapter<Character>(this,android.R.layout.select_dialog_singlechoice, list);
+		listView = (ListView) findViewById(R.id.listView1);
+		//txtView.setBackgroundColor(Color.WHITE);
+		listView.setAdapter(adapter);
 		
-		txtView = (TextView) findViewById(R.id.textView1);
-		txtView.setBackgroundColor(Color.WHITE);
+		editText = (TextView) findViewById(R.id.editText1);
+		editText.setBackgroundColor(Color.WHITE);
 		
 		// handwriting init
 		loadStrokeDataFile();
 		
+		// start the matcher thread
 		initMatcherThread();
 	}
 
@@ -274,7 +282,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 		dp.invalidate();
 		
 		// also reset the word view
-		this.txtView.setText("");
+		//this.txtView.setText("");
+		this.adapter.clear();
 	}
 	
 	public void onUndo(View v) {
@@ -288,11 +297,12 @@ public class MainActivity extends Activity implements OnTouchListener {
 			strokeList.remove(strokeList.size() - 1);
 		}
 		
-		if (this.autoLookup && this.inputCharacter.getStrokeList().size() > 0) {			
+		if (strokeList.size() > 0 && this.autoLookup && this.inputCharacter.getStrokeList().size() > 0) {			
 			this.runLookup();	
 		}
 		else {
-			this.txtView.setText("");
+			//this.txtView.setText("");
+			this.adapter.clear();
 		}
 		
 		dp.invalidate();
@@ -376,7 +386,10 @@ public class MainActivity extends Activity implements OnTouchListener {
 		this.runOnUiThread(new Runnable() {
 			public void run() {
 				Log.i(TAG, "handleMatchedWords: " + Arrays.toString(results));
-				txtView.setText(Arrays.toString(results));
+				//txtView.setText(Arrays.toString(results).replaceAll(",", "").substring(1).replace(']', ' '));
+				for (Character c: results) {
+					adapter.add(c);
+				}
 			}
 		});
 	}
@@ -444,5 +457,31 @@ public class MainActivity extends Activity implements OnTouchListener {
 	        // the source is always this canvas.
 	        super(MainActivity.this);
 	    }
+	}
+	
+	public void addListenerOnSpinnerItemSelection() {
+		listView.setOnItemSelectedListener(new CustomOnItemSelectedListener());
+	}
+
+	public class CustomOnItemSelectedListener implements OnItemSelectedListener {
+
+		public void onItemSelected(AdapterView<?> parent, View view, int pos,
+				long id) {
+			Toast.makeText(
+					parent.getContext(),
+					"OnItemSelectedListener : "
+							+ parent.getItemAtPosition(pos).toString(),
+					Toast.LENGTH_SHORT).show();
+
+			if (pos > 0) {
+				Character c = adapter.getItem(pos);
+				editText.setText(c);
+			}
+		}
+
+		public void onNothingSelected(AdapterView<?> arg0) {
+			// TODO Auto-generated method stub
+		}
+
 	}
 }

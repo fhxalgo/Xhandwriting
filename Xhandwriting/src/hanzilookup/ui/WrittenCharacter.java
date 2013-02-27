@@ -48,7 +48,7 @@ public class WrittenCharacter {
 	private double bottomY;
 		
 	// List of WrittenStrokes.
-	private List strokeList = new ArrayList();
+	private List<WrittenStroke> strokeList = new ArrayList<WrittenStroke>();
 	
 	////////////////////
 	
@@ -63,7 +63,7 @@ public class WrittenCharacter {
 	/**
 	 * @return the List of Strokes objects that defines this WrittenCharacter.
 	 */
-	public List getStrokeList() {
+	public List<WrittenStroke> getStrokeList() {
 		return this.strokeList;
 	}
 	
@@ -95,9 +95,7 @@ public class WrittenCharacter {
 	}
 	
 	public void analyzeAndMark() {
-		for(Iterator strokeIter = this.strokeList.iterator(); strokeIter.hasNext();) {
-			WrittenStroke nextStroke = (WrittenStroke)strokeIter.next();
-		
+		for (WrittenStroke nextStroke : this.strokeList) {		
 			if(!nextStroke.isAnalyzed()) {
 				// If the written character has not been analyzed yet, we need to analyze it.
 				nextStroke.analyzeAndMark();
@@ -126,15 +124,15 @@ public class WrittenCharacter {
 		// Iterate over the WrittenStrokes, and translate them into CharacterDescriptor.SubStrokes.
 		// Add all of the CharacterDescriptor.SubStrokes to the version.
 		// When we run out of substroke positions we truncate all the remaining stroke and substroke information.
-		for(Iterator strokeIter = this.strokeList.iterator(); strokeIter.hasNext() && subStrokeCount < CharacterDescriptor.MAX_CHARACTER_SUB_STROKE_COUNT;) {
+		for(Iterator<WrittenStroke> strokeIter = this.strokeList.iterator(); strokeIter.hasNext() && subStrokeCount < CharacterDescriptor.MAX_CHARACTER_SUB_STROKE_COUNT;) {
 			WrittenStroke nextStroke = (WrittenStroke)strokeIter.next();
 			
 			// Add each substroke's direction and length to the arrays.
 			// All substrokes are lumped sequentially.  What strokes they
 			// were a part of is not factored into the algorithm.
 			// Don't run off the end of the array, if we do we just truncate.
-			List subStrokes = nextStroke.getSubStrokes();
-			for(Iterator subStrokeIter = subStrokes.iterator(); subStrokeIter.hasNext() && subStrokeCount < CharacterDescriptor.MAX_CHARACTER_SUB_STROKE_COUNT; subStrokeCount++) {
+			List<SubStrokeDescriptor> subStrokes = nextStroke.getSubStrokes();
+			for(Iterator<SubStrokeDescriptor> subStrokeIter = subStrokes.iterator(); subStrokeIter.hasNext() && subStrokeCount < CharacterDescriptor.MAX_CHARACTER_SUB_STROKE_COUNT; subStrokeCount++) {
 				SubStrokeDescriptor subStroke = (SubStrokeDescriptor)subStrokeIter.next();
 				
 				directions[subStrokeCount] = subStroke.direction;
@@ -160,7 +158,7 @@ public class WrittenCharacter {
 	public class WrittenStroke {
 		
 		// pointList contains WrittenPoints
-		private List pointList = new ArrayList();
+		private List<WrittenPoint> pointList = new ArrayList<WrittenPoint>();
 		
 		// Flag to see if this stroke has already been analyzed
 		private boolean isAnalyzed = false;
@@ -175,7 +173,7 @@ public class WrittenCharacter {
 		/**
 		 * @return the List of WrittenPoints
 		 */
-		public List getPointList() {
+		public List<WrittenPoint> getPointList() {
 			return this.pointList;
 		}
 		
@@ -214,18 +212,18 @@ public class WrittenCharacter {
 		// Used to find a gradual transition between one SubStroke and another at a curve.
 		static final private double MAX_RUNNING_LENGTH_RATIO = 1.09;
 		
-		public List getSubStrokes() {
+		public List<SubStrokeDescriptor> getSubStrokes() {
 			if(!this.isAnalyzed) {
 				this.analyzeAndMark();
 			}
 			
-			List subStrokes = new ArrayList();
+			List<SubStrokeDescriptor> subStrokes = new ArrayList<SubStrokeDescriptor>();
 			
 			// Any WrittenStroke should have at least two points, (a single point cannot constitute a Stroke).
 			// We should therefore be safe calling an iterator without checking for the first point.
-			Iterator pointIter = this.pointList.iterator();			
+			Iterator<WrittenPoint> pointIter = this.pointList.iterator();			
 			WrittenPoint previousPoint = (WrittenPoint)pointIter.next();
-				
+			
 			while(pointIter.hasNext()) {
 				WrittenPoint nextPoint = (WrittenPoint)pointIter.next();
 					
@@ -252,7 +250,7 @@ public class WrittenCharacter {
 		 * These pivot points can later be used to build up a List of SubStroke objects.
 		 */
 		private void analyzeAndMark() {
-			Iterator pointIter = this.pointList.iterator();
+			Iterator<WrittenCharacter.WrittenPoint> pointIter = this.pointList.iterator();
 			
 			// It should be impossible for a stroke to have < 2 points, so we are safe calling next() twice.
 			WrittenPoint firstPoint = (WrittenPoint)pointIter.next();
@@ -358,6 +356,10 @@ public class WrittenCharacter {
 	 * visual que on how the Strokes were divided up.
 	 */
 	public class WrittenPoint extends Point {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private int subStrokeIndex;	// The index of this SubStroke in the character.
 		private boolean isPivot;	// If this point is a pivot.
 		
