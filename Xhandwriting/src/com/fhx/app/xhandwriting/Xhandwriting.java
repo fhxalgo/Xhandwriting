@@ -1,8 +1,9 @@
-package com.example.xhandwriting;
+package com.fhx.app.xhandwriting;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.EventObject;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,8 +23,11 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
@@ -41,9 +45,9 @@ import hanzilookup.data.MatcherThread.ResultsHandler;
 import hanzilookup.ui.WrittenCharacter;
 
 
-public class MainActivity extends Activity implements OnTouchListener {
+public class Xhandwriting extends Activity implements OnTouchListener {
 
-	private static String TAG = MainActivity.class.getName();
+	private static String TAG = Xhandwriting.class.getName();
 	
 	DrawPanel dp;
 	private List<Path> pointsToDraw = new ArrayList<Path>();
@@ -74,7 +78,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 	// Use a LinkedHashSet since it iterates in order.
 	private Set characterHandlers = new LinkedHashSet();
 	private List candidatesList;
-	private List<Character> list = new ArrayList<Character>();  // match list
+	private List<Character> matchedList = new ArrayList<Character>();  // match list
 	private ArrayAdapter<Character> adapter;
 	
 	///// CharacterCanvas
@@ -110,13 +114,48 @@ public class MainActivity extends Activity implements OnTouchListener {
 		fl.addView(dp);
 		Log.i(TAG, "added DrawPanel");
 				
-		adapter = new ArrayAdapter<Character>(this,android.R.layout.select_dialog_singlechoice, list);
+		adapter = new ArrayAdapter<Character>(this,
+				android.R.layout.simple_list_item_1, matchedList);
 		listView = (ListView) findViewById(R.id.listView1);
 		//txtView.setBackgroundColor(Color.WHITE);
 		listView.setAdapter(adapter);
-		
+
 		editText = (TextView) findViewById(R.id.editText1);
 		editText.setBackgroundColor(Color.WHITE);
+		
+		// add word to TextArea
+		listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				
+				Toast.makeText(getApplicationContext(),
+						"Click ListItem Number " + position, Toast.LENGTH_LONG).show();
+				
+				Character item = adapter.getItem(position);
+				editText.setText(item + " : " + new Date());
+			}
+
+		});
+		
+		// long click: show dictionary!
+		listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+
+				Character item = adapter.getItem(position);
+				editText.setText(item + " : " + new Date());
+
+				view.setSelected(true);
+				return true;
+			}
+		});
+		
+		// add listView action listener
+		//addListenerOnSpinnerItemSelection();
 		
 		// handwriting init
 		loadStrokeDataFile();
@@ -350,7 +389,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 		this.matcherThread = new MatcherThread();
 		this.matcherThread.addResultsHandler(new ResultsHandler() {
 			public void handleResults(Character[] results) {
-				MainActivity.this.handleMatchedWords(results);
+				Xhandwriting.this.handleMatchedWords(results);
 			}
 		});
 		
@@ -387,6 +426,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 			public void run() {
 				Log.i(TAG, "handleMatchedWords: " + Arrays.toString(results));
 				//txtView.setText(Arrays.toString(results).replaceAll(",", "").substring(1).replace(']', ' '));
+				adapter.clear();
 				for (Character c: results) {
 					adapter.add(c);
 				}
@@ -455,7 +495,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 	public class StrokeEvent extends EventObject {
 	    private StrokeEvent() {
 	        // the source is always this canvas.
-	        super(MainActivity.this);
+	        super(Xhandwriting.this);
 	    }
 	}
 	
@@ -467,6 +507,7 @@ public class MainActivity extends Activity implements OnTouchListener {
 
 		public void onItemSelected(AdapterView<?> parent, View view, int pos,
 				long id) {
+			
 			Toast.makeText(
 					parent.getContext(),
 					"OnItemSelectedListener : "
@@ -475,7 +516,8 @@ public class MainActivity extends Activity implements OnTouchListener {
 
 			if (pos > 0) {
 				Character c = adapter.getItem(pos);
-				editText.setText(c);
+				editText.setText(c);				
+				//editText.setText(editText.getText() + " | " + new Date());
 			}
 		}
 
