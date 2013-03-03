@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import android.os.Bundle;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -23,7 +24,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -262,6 +262,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 			holder = getHolder();
 		}
 
+		@SuppressLint("WrongCall")
 		public void run() {
 			// TODO Auto-generated method stub
 			while (isItOk == true) {
