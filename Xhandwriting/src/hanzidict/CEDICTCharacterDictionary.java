@@ -12,8 +12,6 @@ import java.util.EventListener;
 import java.util.EventObject;
 import java.util.List;
 
-import com.fhx.app.xhandwriting.Xhandwriting;
-
 //import javax.swing.event.ChangeEvent;
 //import javax.swing.event.ChangeListener;
 
@@ -34,7 +32,7 @@ import android.util.Log;
  * resource.  For now will leave with skipping forward instead of random access.
  */
 public class CEDICTCharacterDictionary implements CharacterDictionary {
-	private static String TAG = Xhandwriting.class.getName();
+	private static String TAG = CEDICTCharacterDictionary.class.getName();
 	
 	// we ignore any characters that are below or above the below thresholds
 	static private final char LOW_CHAR = '\u4e00';

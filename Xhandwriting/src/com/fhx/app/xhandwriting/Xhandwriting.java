@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import hanzidict.HanziDict;
 import hanzilookup.data.CharacterDescriptor;
 import hanzilookup.data.CharacterTypeRepository;
 import hanzilookup.data.MatcherThread;
@@ -90,6 +91,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	// Need to keep track of the previous point as we are building a new WrittenStroke.
 	private WrittenCharacter.WrittenPoint previousPoint;
 
+	public HanziDict dictionary;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +115,10 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		
 		fl.addView(dp);
 		Log.i(TAG, "added DrawPanel");
+		
+		// load dictionary data
+		this.dictionary = new HanziDict(this.getAssets());
+		this.dictionary.init();
 				
 		adapter = new ArrayAdapter<Character>(this,
 				android.R.layout.simple_list_item_1, matchedList);
@@ -147,8 +153,11 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 					int position, long id) {
 
 				Character item = adapter.getItem(position);
-				editText.setText(item + " : " + new Date());
-
+				//editText.setText(item + " : " + new Date());
+				
+				String def = dictionary.getDefinitionData(item.charValue());
+				editText.setText(def);
+				
 				view.setSelected(true);
 				return true;
 			}
@@ -161,7 +170,8 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		loadStrokeDataFile();
 		
 		// start the matcher thread
-		initMatcherThread();
+		initMatcherThread();		
+
 	}
 
 	@Override
@@ -500,9 +510,9 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	    }
 	}
 	
-	public void addListenerOnSpinnerItemSelection() {
-		listView.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-	}
+//	public void addListenerOnSpinnerItemSelection() {
+//		listView.setOnItemSelectedListener(new CustomOnItemSelectedListener());
+//	}
 
 	public class CustomOnItemSelectedListener implements OnItemSelectedListener {
 
@@ -518,7 +528,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 			if (pos > 0) {
 				Character c = adapter.getItem(pos);
 				editText.setText(c);				
-				//editText.setText(editText.getText() + " | " + new Date());
+				editText.setText(editText.getText() + " | " + new Date());
 			}
 		}
 
@@ -527,4 +537,15 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		}
 
 	}
+	
+//	public void characterSelected(CharacterSelectionEvent e) {
+//	char selectedChar = e.getSelectedCharacter();
+//    CharacterDictionary.Entry entry = this.dictionary.lookup(selectedChar);
+//    
+//    if(null != entry) {
+//        this.loadDefinitionData(selectedChar, entry);
+//    } else {
+//        this.loadEmptyDefinition(selectedChar);
+//    }        
+//}
 }

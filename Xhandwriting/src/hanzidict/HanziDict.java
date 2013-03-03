@@ -8,29 +8,32 @@ import java.net.URL;
 import java.util.EventListener;
 import java.util.MissingResourceException;
 
+import android.content.res.AssetManager;
+
 import hanzidict.CEDICTCharacterDictionary.CEDICTStreamProvider;
 import hanzidict.CharacterDictionary.Entry.Definition;
 
 
 public class HanziDict {
 
-	static private final String DEFAULT_RESOURCE_DICTIONARY_PATH = "/cedict_ts.u8";
-	static private final String STROKE_DATA	= "/strokes.dat";
+	public AssetManager am;
+	final private String DEFAULT_RESOURCE_DICTIONARY_PATH = "cedict_ts.u8";
+	//static private final String STROKE_DATA	= "/strokes.dat";
 	//static private final String STROKE_DATA	= "/strokes-extended.dat";
 
 	private CharacterDictionary dictionary;
 	
-	private String resourceDictionaryPath = DEFAULT_RESOURCE_DICTIONARY_PATH;
-	private String fileDictionaryPath = "";
+//	private String resourceDictionaryPath = DEFAULT_RESOURCE_DICTIONARY_PATH;
+//	private String fileDictionaryPath = "";
 	private boolean usingResourceDictionary = true;
 
+	public HanziDict(AssetManager am) {
+		this.am = am;
+	}
+	
 	public void init() {
 		try {
-			if (this.usingResourceDictionary) {
-				this.loadResourceDictionary(this.resourceDictionaryPath, null);
-			} else {
-				this.loadFileDictionary(this.fileDictionaryPath, null);
-			}
+			this.loadFileDictionary(DEFAULT_RESOURCE_DICTIONARY_PATH, null);
 		} catch (IOException ioe) {
 
 		}
@@ -47,21 +50,20 @@ public class HanziDict {
      * @param progressListener
      * @throws IOException
      */
-    private void loadResourceDictionary(String resourcePath, EventListener progressListener) throws IOException {
-    	final URL resourceURL = this.getClass().getResource(resourcePath);
-		if(null == resourceURL) {
-			throw new MissingResourceException("Can't find resource: " + resourcePath, this.getClass().getName(), resourcePath);
-		} else {
-			this.loadDictionary(new CEDICTStreamProvider() {
-				public InputStream getCEDICTStream() throws IOException {
-					return resourceURL.openStream();
-				}
-			}, progressListener);
-			
-			HanziDict.this.resourceDictionaryPath = resourcePath;
-			HanziDict.this.usingResourceDictionary = true;
-		}
-    }
+//    private void loadResourceDictionary(String resourcePath, EventListener progressListener) throws IOException {
+//    	final URL resourceURL = this.getClass().getResource(resourcePath);
+//		if(null == resourceURL) {
+//			throw new MissingResourceException("Can't find resource: " + resourcePath, this.getClass().getName(), resourcePath);
+//		} else {
+//			this.loadDictionary(new CEDICTStreamProvider() {
+//				public InputStream getCEDICTStream() throws IOException {
+//					return resourceURL.openStream();
+//				}
+//			}, progressListener);
+//			
+//			HanziDict.this.usingResourceDictionary = true;
+//		}
+//    }
     
     
     /**
@@ -70,20 +72,20 @@ public class HanziDict {
      * @param progressListener
      * @throws IOException
      */
-    private void loadFileDictionary(String filePath, EventListener progressListener) throws IOException {
-    	final File file = new File(filePath);
-		if(!file.canRead()) {
-			throw new IOException("Can't read from the specified file: " + filePath);
-		} else {
+    private void loadFileDictionary(final String filePath, EventListener progressListener) throws IOException {
+    	//final File file = new File(filePath);
+		//if(!file.canRead()) {
+		//	throw new IOException("Can't read from the specified file: " + filePath);
+		//} else {
 			this.loadDictionary(new CEDICTStreamProvider() {
 				public InputStream getCEDICTStream() throws IOException {
-					return new FileInputStream(file);
+					//return new FileInputStream(file);
+					return am.open(filePath);
 				}
 			}, progressListener);
 			
-			HanziDict.this.fileDictionaryPath = filePath;
-			HanziDict.this.usingResourceDictionary = false;
-		}
+			//HanziDict.this.usingResourceDictionary = false;
+		//}
     }
     
     private void loadDictionary(CEDICTStreamProvider streamProvider, EventListener progressListener) throws IOException {
@@ -190,5 +192,67 @@ public class HanziDict {
 	private void loadEmptyDefinition(char character) {
 		//this.definitionTextPane.setText("<html>\n<body>\nNo definition found.\n</body>\n</html>");
 		
+	}
+	
+    public String getDefinitionData(char selectedChar) {
+    	CharacterDictionary.Entry dictEntry = this.dictionary.lookup(selectedChar);
+    	
+	    if(null == dictEntry) {
+	    	return "No definition found.";
+    	} 
+
+		char tradChar = dictEntry.getTraditional();
+		char simpChar = dictEntry.getSimplified();
+		
+		char primaryChar;
+		char secondaryChar;
+		
+		if(selectedChar == tradChar) {
+			primaryChar = tradChar;
+			secondaryChar = simpChar;
+		} else {
+			primaryChar = simpChar;
+			secondaryChar = tradChar;
+		}
+    	
+		StringBuffer paneText = new StringBuffer();
+				
+		paneText.append(primaryChar);
+		paneText.append(":");
+		if(secondaryChar != primaryChar) {
+			paneText.append("(").append(secondaryChar).append(")");
+		}
+		
+		Definition[] defs = dictEntry.getDefinitions();
+		
+		// display the data in an html list
+		// cycle through pronunciations
+		for(int i = 0; i < defs.length; i++) {
+			paneText.append(i+1).append(". ");
+			String pinyinString = Pinyinifier.pinyinify(defs[i].getPinyin());
+			
+			/* canDisplayUpTo not reliable, apparently
+			if(this.getFont().canDisplayUpTo(pinyinString) > -1) {
+				// preferably show pinyin tones with accented chars,
+				// but if the font can't do that, then revert to tone digits appended.
+				pinyinString = defs[i].getPinyin();
+			}
+			*/
+			
+			paneText.append(pinyinString).append(" ");
+			
+			String[] translations = defs[i].getTranslations();
+			
+			// cycle through the definitions for this pronunciation
+			for(int j = 0; j < translations.length; j++) {
+				paneText.append(translations[j]);
+				if(j < translations.length - 1) {
+					paneText.append("; ");
+				}
+			}
+			paneText.append("| ");
+		}
+				
+		return paneText.toString();
 	}
 }
