@@ -1,6 +1,12 @@
 package com.fhx.app.xhandwriting;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -8,7 +14,12 @@ import java.util.EventObject;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -93,6 +104,9 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 
 	public HanziDict dictionary;
 	
+	private MediaPlayer player;
+	private MediaPlayer mp = new MediaPlayer();;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -140,7 +154,12 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 						"Click ListItem Number " + position, Toast.LENGTH_LONG).show();
 				
 				Character item = adapter.getItem(position);
-				editText.setText(item + " : " + new Date());
+				//editText.setText(item + " : " + new Date());
+				
+				String def = dictionary.getDefinitionData(item.charValue());
+				editText.setText(def);
+				
+				view.setSelected(true);
 			}
 
 		});
@@ -152,11 +171,19 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
 
+				// do sound 
+				Toast.makeText(getApplicationContext(),
+						"Sound for " + position, Toast.LENGTH_LONG).show();
+								
 				Character item = adapter.getItem(position);
-				//editText.setText(item + " : " + new Date());
+				List<String> audioFiles = dictionary.getPinyinFiles(item);
 				
-				String def = dictionary.getDefinitionData(item.charValue());
-				editText.setText(def);
+				editText.setText(item + " : " + Arrays.toString(audioFiles.toArray()));
+				
+				// look up the pinyin audio files
+				for (String af : audioFiles) {
+					playMedia(af);
+				}
 				
 				view.setSelected(true);
 				return true;
@@ -168,6 +195,9 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		
 		// handwriting init
 		loadStrokeDataFile();
+		
+		// load mp3 pin yin audio files - zip file 
+		//loadPinyinAudioFiles();
 		
 		// start the matcher thread
 		initMatcherThread();		
@@ -513,39 +543,148 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 //	public void addListenerOnSpinnerItemSelection() {
 //		listView.setOnItemSelectedListener(new CustomOnItemSelectedListener());
 //	}
+//
+//	public class CustomOnItemSelectedListener implements OnItemSelectedListener {
+//
+//		public void onItemSelected(AdapterView<?> parent, View view, int pos,
+//				long id) {
+//			
+//			Toast.makeText(
+//					parent.getContext(),
+//					"OnItemSelectedListener : "
+//							+ parent.getItemAtPosition(pos).toString(),
+//					Toast.LENGTH_SHORT).show();
+//
+//			if (pos > 0) {
+//				Character c = adapter.getItem(pos);
+//				editText.setText(c);				
+//				editText.setText(editText.getText() + " | " + new Date());
+//			}
+//		}
+//
+//		public void onNothingSelected(AdapterView<?> arg0) {
+//			// TODO Auto-generated method stub
+//		}
+//
+//	}
+	
 
-	public class CustomOnItemSelectedListener implements OnItemSelectedListener {
-
-		public void onItemSelected(AdapterView<?> parent, View view, int pos,
-				long id) {
-			
-			Toast.makeText(
-					parent.getContext(),
-					"OnItemSelectedListener : "
-							+ parent.getItemAtPosition(pos).toString(),
-					Toast.LENGTH_SHORT).show();
-
-			if (pos > 0) {
-				Character c = adapter.getItem(pos);
-				editText.setText(c);				
-				editText.setText(editText.getText() + " | " + new Date());
+	public void playMP3 (int mp3FileId) {
+		
+		player = MediaPlayer.create(this, mp3FileId);
+		//player.setVolume(volume_level, volume_level);
+		player.start();
+		player.setOnCompletionListener(new OnCompletionListener() {			
+			@Override
+			public void onCompletion(MediaPlayer arg0) {
+				//volume_level += volume_incr;
+				//player.setVolume(volume_level, volume_level);
+				/*try {
+					player.prepare();
+				} catch (IOException e) {
+					// Should be a CANTHAPPEN since was previously prepared!
+					Log.i(LOG_TAG, "Unexpected IOException " + e);
+				}*/
+				player.stop();
 			}
-		}
-
-		public void onNothingSelected(AdapterView<?> arg0) {
-			// TODO Auto-generated method stub
-		}
-
+		});	
 	}
 	
-//	public void characterSelected(CharacterSelectionEvent e) {
-//	char selectedChar = e.getSelectedCharacter();
-//    CharacterDictionary.Entry entry = this.dictionary.lookup(selectedChar);
-//    
-//    if(null != entry) {
-//        this.loadDefinitionData(selectedChar, entry);
-//    } else {
-//        this.loadEmptyDefinition(selectedChar);
-//    }        
-//}
+//	public void loadPinyinAudioFiles() {
+//		try {
+//			Log.i(TAG, "loaded loadPinyinAudioFiles ");
+//
+//			AssetManager am = this.getAssets();
+//			InputStream is = am.open("Mandarin_sounds.zip");
+//			InputStreamReader inputStreamReader = new InputStreamReader(is);
+//			BufferedReader reader = new BufferedReader(inputStreamReader);
+//			
+//			//ZipFile zip = new ZipFile("Mandarin_sounds.zip");
+//			//ZipInputStream zis = new ZipInputStream(new FileInputStream("archive.zip"));
+//			//ZipInputStream zis = new ZipInputStream(is);
+//			
+//			//Log.i(TAG, "loaded stroke characters: " + strokeDataMap.keySet().size());
+//		} catch (Exception io) {
+//
+//		}
+//	}
+	
+	private void playMedia(String fileName) {
+		try {
+			// create temp audio file from Mandarin_sounds.zip
+//			ZipFile zip = new ZipFile("Mandarin_sounds.zip");
+//			ZipEntry entry = zip.getEntry(fileName);
+//			if (entry != null) {
+//				InputStream in = zip.getInputStream(entry);
+//				// see Note #3.
+//				File tempFile = File.createTempFile("_AUDIO_", ".wav");
+//				FileOutputStream out = new FileOutputStream(tempFile);
+//				copyFile(in, out);
+//				// do something with tempFile (like play it)
+//			} else {
+//				// no such entry in the zip
+//			}
+			
+			AssetManager am = this.getAssets();
+			InputStream is = am.open("Mandarin_sounds.zip");
+			ZipInputStream zis = new ZipInputStream(is);
+			
+	          ZipEntry ze = null; 
+              while ((ze = zis.getNextEntry()) != null) { 
+                  if (ze.getName().equals(fileName+".mp3")) {
+                      //Toast.makeText(this, "Found", 2).show();
+      				File tempFile = File.createTempFile(fileName, ".mp3");
+      				FileOutputStream out = new FileOutputStream(tempFile);
+      				copyFile(zis, out);
+                      break; 
+                  } 
+              } 
+              
+			File f = new File(fileName);
+			if (!f.canRead()) {
+				Toast.makeText(this, "CANNOT READ " + fileName,
+						Toast.LENGTH_SHORT).show();
+				return;
+			}
+			mp.setDataSource(fileName);
+			mp.prepare();
+			Toast.makeText(this, "Start play", Toast.LENGTH_SHORT).show();
+			mp.setOnCompletionListener(new OnCompletionListener() {
+				@Override
+				public void onCompletion(MediaPlayer mp) {
+					mp.stop();
+					Toast.makeText(Xhandwriting.this, "Media Play Complete",
+							Toast.LENGTH_SHORT).show();
+				}
+			});
+
+			mp.start();
+			Toast.makeText(this, "Started OK", Toast.LENGTH_SHORT).show();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+    public void copyFile(InputStream inStream, OutputStream outStream) {	
+  
+    	try{
+
+    	    byte[] buffer = new byte[1024];
+ 
+    	    int length;
+    	    //copy the file content in bytes 
+    	    while ((length = inStream.read(buffer)) > 0){
+ 
+    	    	outStream.write(buffer, 0, length); 
+    	    }
+ 
+    	    inStream.close();
+    	    outStream.close();
+ 
+    	    Log.i(TAG, "File is copied successful!");
+ 
+    	}catch(IOException e){
+    		e.printStackTrace();
+    	}
+    }
 }

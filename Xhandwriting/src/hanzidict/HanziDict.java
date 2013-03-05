@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.List;
 import java.util.MissingResourceException;
 
 import android.content.res.AssetManager;
@@ -250,9 +252,51 @@ public class HanziDict {
 					paneText.append("; ");
 				}
 			}
-			paneText.append("| ");
+			paneText.append(" | ");
 		}
 				
 		return paneText.toString();
+	}
+    
+    public List<String> getPinyinFiles(char selectedChar) {
+    	List<String> files = new ArrayList<String>();
+    	
+    	CharacterDictionary.Entry dictEntry = this.dictionary.lookup(selectedChar);
+    	
+	    if(null == dictEntry) {
+	    	return files;
+    	} 
+
+		char tradChar = dictEntry.getTraditional();
+		char simpChar = dictEntry.getSimplified();
+		
+		char primaryChar;
+		char secondaryChar;
+		
+		if(selectedChar == tradChar) {
+			primaryChar = tradChar;
+			secondaryChar = simpChar;
+		} else {
+			primaryChar = simpChar;
+			secondaryChar = tradChar;
+		}
+    	
+		StringBuffer paneText = new StringBuffer();
+				
+		paneText.append(primaryChar);
+		paneText.append(":");
+		if(secondaryChar != primaryChar) {
+			paneText.append("(").append(secondaryChar).append(")");
+		}
+		
+		Definition[] defs = dictEntry.getDefinitions();
+		
+		// display the data in an html list
+		// cycle through pronunciations
+		for(int i = 0; i < defs.length; i++) {
+			files.add(defs[i].getPinyin());
+		}
+		
+		return files;
 	}
 }
