@@ -1,21 +1,17 @@
 package com.fhx.app.xhandwriting;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.EventObject;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import android.media.MediaPlayer;
@@ -44,7 +40,6 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 import hanzidict.HanziDict;
 import hanzilookup.data.CharacterDescriptor;
@@ -105,7 +100,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	public HanziDict dictionary;
 	
 	private MediaPlayer player;
-	private MediaPlayer mp = new MediaPlayer();;
+	private MediaPlayer mp = new MediaPlayer();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -189,9 +184,6 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 				return true;
 			}
 		});
-		
-		// add listView action listener
-		//addListenerOnSpinnerItemSelection();
 		
 		// handwriting init
 		loadStrokeDataFile();
@@ -450,19 +442,8 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	 * @param results the results to load
 	 */
 	private void handleMatchedWords(final Character[] results) {
-		// invokeLater ensures that the JList updated on the
-		// event dispatch Thread.  Touching it in a separate
-		// Thread can lead to issues.
-//		new Thread(new Runnable() {
-//			public void run() {
-//				Log.i(TAG, "handleResults: " + Arrays.toString(results));
-//				txtView.setText( Arrays.toString(results));
-//			}
-//		}).start();
 		
-//		Log.i(TAG, "handleMatchedWords: " + Arrays.toString(results));
-//		MainActivity.txtView.setText(Arrays.toString(results));
-		
+		// the normal Thread doesn't work
 		this.runOnUiThread(new Runnable() {
 			public void run() {
 				Log.i(TAG, "handleMatchedWords: " + Arrays.toString(results));
@@ -539,36 +520,9 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	        super(Xhandwriting.this);
 	    }
 	}
-	
-//	public void addListenerOnSpinnerItemSelection() {
-//		listView.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-//	}
-//
-//	public class CustomOnItemSelectedListener implements OnItemSelectedListener {
-//
-//		public void onItemSelected(AdapterView<?> parent, View view, int pos,
-//				long id) {
-//			
-//			Toast.makeText(
-//					parent.getContext(),
-//					"OnItemSelectedListener : "
-//							+ parent.getItemAtPosition(pos).toString(),
-//					Toast.LENGTH_SHORT).show();
-//
-//			if (pos > 0) {
-//				Character c = adapter.getItem(pos);
-//				editText.setText(c);				
-//				editText.setText(editText.getText() + " | " + new Date());
-//			}
-//		}
-//
-//		public void onNothingSelected(AdapterView<?> arg0) {
-//			// TODO Auto-generated method stub
-//		}
-//
-//	}
-	
 
+	// mp3 stuff: which way is better, add to res/raw or use zip?? 
+	// measure performance on this
 	public void playMP3 (int mp3FileId) {
 		
 		player = MediaPlayer.create(this, mp3FileId);
@@ -590,63 +544,45 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		});	
 	}
 	
-//	public void loadPinyinAudioFiles() {
-//		try {
-//			Log.i(TAG, "loaded loadPinyinAudioFiles ");
-//
-//			AssetManager am = this.getAssets();
-//			InputStream is = am.open("Mandarin_sounds.zip");
-//			InputStreamReader inputStreamReader = new InputStreamReader(is);
-//			BufferedReader reader = new BufferedReader(inputStreamReader);
-//			
-//			//ZipFile zip = new ZipFile("Mandarin_sounds.zip");
-//			//ZipInputStream zis = new ZipInputStream(new FileInputStream("archive.zip"));
-//			//ZipInputStream zis = new ZipInputStream(is);
-//			
-//			//Log.i(TAG, "loaded stroke characters: " + strokeDataMap.keySet().size());
-//		} catch (Exception io) {
-//
-//		}
-//	}
+	public void loadPinyinAudioFiles() {
+		try {
+			Log.i(TAG, "loading loadPinyinAudioFiles...");
+			
+			Log.i(TAG, "loaded Mandarin_sound.zip file.");
+		} catch (Exception io) {
+
+		}
+	}
 	
 	private void playMedia(String fileName) {
+		// should probably do it in a seperate thread, like matcherThread
+		
 		try {
-			// create temp audio file from Mandarin_sounds.zip
-//			ZipFile zip = new ZipFile("Mandarin_sounds.zip");
-//			ZipEntry entry = zip.getEntry(fileName);
-//			if (entry != null) {
-//				InputStream in = zip.getInputStream(entry);
-//				// see Note #3.
-//				File tempFile = File.createTempFile("_AUDIO_", ".wav");
-//				FileOutputStream out = new FileOutputStream(tempFile);
-//				copyFile(in, out);
-//				// do something with tempFile (like play it)
-//			} else {
-//				// no such entry in the zip
-//			}
-			
 			AssetManager am = this.getAssets();
 			InputStream is = am.open("Mandarin_sounds.zip");
 			ZipInputStream zis = new ZipInputStream(is);
 			
-	          ZipEntry ze = null; 
-              while ((ze = zis.getNextEntry()) != null) { 
-                  if (ze.getName().equals(fileName+".mp3")) {
-                      //Toast.makeText(this, "Found", 2).show();
-      				File tempFile = File.createTempFile(fileName, ".mp3");
-      				FileOutputStream out = new FileOutputStream(tempFile);
-      				copyFile(zis, out);
-                      break; 
-                  } 
-              } 
-              
-			File f = new File(fileName);
-			if (!f.canRead()) {
+			ZipEntry ze = null;
+			File mp3File = null;
+			FileOutputStream out = null;
+			while ((ze = zis.getNextEntry()) != null) {
+				if (ze.getName().equals(fileName + ".mp3")) {
+					// Toast.makeText(this, "Found", 2).show();
+					mp3File = File.createTempFile(fileName, ".mp3");
+					out = new FileOutputStream(mp3File);
+					copyFile(zis, out);
+					break;
+				}
+			}
+
+			if (mp3File == null || !mp3File.canRead()) {
 				Toast.makeText(this, "CANNOT READ " + fileName,
 						Toast.LENGTH_SHORT).show();
 				return;
 			}
-			mp.setDataSource(fileName);
+			
+			mp.reset();  // reset the play to ready state
+			mp.setDataSource(mp3File.getAbsolutePath());
 			mp.prepare();
 			Toast.makeText(this, "Start play", Toast.LENGTH_SHORT).show();
 			mp.setOnCompletionListener(new OnCompletionListener() {
