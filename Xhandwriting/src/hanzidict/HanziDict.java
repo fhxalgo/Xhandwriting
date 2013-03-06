@@ -230,7 +230,7 @@ public class HanziDict {
 		// display the data in an html list
 		// cycle through pronunciations
 		for(int i = 0; i < defs.length; i++) {
-			paneText.append(i+1).append(". ");
+			if (defs.length > 1)  paneText.append(i+1).append(". ");
 			String pinyinString = Pinyinifier.pinyinify(defs[i].getPinyin());
 			
 			/* canDisplayUpTo not reliable, apparently
@@ -252,7 +252,7 @@ public class HanziDict {
 					paneText.append("; ");
 				}
 			}
-			paneText.append(" | ");
+			if (defs.length > 1)  paneText.append(" | ");
 		}
 				
 		return paneText.toString();

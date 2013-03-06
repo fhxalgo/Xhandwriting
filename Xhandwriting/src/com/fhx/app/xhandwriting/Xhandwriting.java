@@ -50,6 +50,7 @@ import hanzilookup.data.StrokesDataSource;
 import hanzilookup.data.StrokesMatcher;
 import hanzilookup.data.MatcherThread.ResultsHandler;
 import hanzilookup.ui.WrittenCharacter;
+import hanzilookup.ui.WrittenCharacter.WrittenStroke;
 
 
 public class Xhandwriting extends Activity implements OnTouchListener {
@@ -354,7 +355,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		dp.invalidate();
 		
 		// also reset the word view
-		//this.txtView.setText("");
+		this.editText.setText("");
 		this.adapter.clear();
 	}
 	
@@ -364,7 +365,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		}
 		
 		// remove the last character stroke
-		List strokeList = this.inputCharacter.getStrokeList();
+		List<WrittenStroke> strokeList = this.inputCharacter.getStrokeList();
 		if (strokeList.size() > 0) {
 			strokeList.remove(strokeList.size() - 1);
 		}
@@ -373,8 +374,8 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 			this.runLookup();	
 		}
 		else {
-			//this.txtView.setText("");
 			this.adapter.clear();
+			this.editText.setText("");
 		}
 		
 		dp.invalidate();
