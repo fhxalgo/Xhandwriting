@@ -27,6 +27,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -56,6 +57,7 @@ import hanzilookup.ui.WrittenCharacter.WrittenStroke;
 public class Xhandwriting extends Activity implements OnTouchListener {
 
 	private static String TAG = Xhandwriting.class.getName();
+	final public int ABOUT = 0;
 	
 	DrawPanel dp;
 	private List<Path> pointsToDraw = new ArrayList<Path>();
@@ -200,8 +202,10 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+//		getMenuInflater().inflate(R.menu.main, menu);
+//		return true;
+    	menu.add(0,ABOUT,0,"About");
+    	return true;		
 	}
 
 	@Override
@@ -624,4 +628,17 @@ public class Xhandwriting extends Activity implements OnTouchListener {
     		e.printStackTrace();
     	}
     }
+    
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case ABOUT:
+			AboutDialog about = new AboutDialog(this);
+			about.setTitle("XHandwriting demo");
+			about.show();
+
+			break;
+
+		}
+		return true;
+	}
 }

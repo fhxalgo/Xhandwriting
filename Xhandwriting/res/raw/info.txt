@@ -1,0 +1,5 @@
+<h3>Chinese Learning App</h3>
+Version 1.0.0001<br>
+Copyright 2012<br>
+<b>www.quanttradingideas.com</b><br><br>
+1-800-555-8888
