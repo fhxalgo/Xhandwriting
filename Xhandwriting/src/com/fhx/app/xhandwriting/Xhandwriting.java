@@ -1,16 +1,22 @@
 package com.fhx.app.xhandwriting;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -53,16 +59,12 @@ import hanzilookup.data.MatcherThread.ResultsHandler;
 import hanzilookup.ui.WrittenCharacter;
 import hanzilookup.ui.WrittenCharacter.WrittenStroke;
 
+import com.fhxapp.cstroke.CStrokeView;
 
 public class Xhandwriting extends Activity implements OnTouchListener {
 
 	private static String TAG = Xhandwriting.class.getName();
 	final public int ABOUT = 0;
-	
-	DrawPanel dp;
-	private List<Path> pointsToDraw = new ArrayList<Path>();
-	private Paint mPaint;
-	Path path;
 	
 	private ListView listView;  // show list of matched words
 	private TextView editText;  // show added words panel
@@ -86,8 +88,8 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	
 	// List of components that receive the results of this lookup widget.
 	// Use a LinkedHashSet since it iterates in order.
-	private Set characterHandlers = new LinkedHashSet();
-	private List candidatesList;
+	//private Set characterHandlers = new LinkedHashSet();
+	//private List candidatesList;
 	private List<Character> matchedList = new ArrayList<Character>();  // match list
 	private ArrayAdapter<Character> adapter;
 	
@@ -104,6 +106,14 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	
 	private MediaPlayer player;
 	private MediaPlayer mp = new MediaPlayer();
+	
+	// stroke animation
+	private DrawPanel dp;
+	private List<Path> pointsToDraw = new ArrayList<Path>();
+	private Paint mPaint;
+	private Path path;
+	private CStrokeView dv;	
+	private Map<String, String> strokeDataMap = new HashMap<String, String>();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -162,6 +172,10 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 
 		});
 		
+		
+		// show stroke animation
+		dv = new CStrokeView(this);
+		
 		// long click: show dictionary!
 		listView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -179,8 +193,28 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 				editText.setText(item + " : " + Arrays.toString(audioFiles.toArray()));
 				
 				// look up the pinyin audio files
-				for (String af : audioFiles) {
-					playMedia(af);
+//				for (String af : audioFiles) {
+//					playMedia(af);
+//				}
+				
+				if (position > 0) {
+					String strokeData = strokeDataMap.get(item);
+					//if (strokeData != null)  dv.setStrokeData(strokeData);
+					
+					//友  you3, friend
+					String you = "     #1PO: 61,82;69,79;78,79;86,78;95,77;          104,76;113,74;122,72;139,69;148,68;          156,66;163,65;173,63;183,61;192,59;          200,57;208,55;214,58;218,60;224,66;          216,71;207,72;201,73;187,76;175,78;          163,79;153,81;143,82;134,83;119,84;          111,87;105,88;96,90;88,91;81,91;          74,91;70,89;      #4PO: 130,12;126,16;127,45;122,72;119,84;          113,99;106,113;99,127;91,141;82,154;          73,167;64,178;55,188;46,198;36,207;          26,216;15,226;8,232;5,233;14,229;          24,224;33,218;42,212;51,205;61,197;          69,189;78,180;86,171;95,160;101,152;          107,143;110,136;134,83;139,69;141,60;          144,50;148,40;150,35;153,28;151,23;          145,18;136,14;      #1NR: 110,136;107,143;112,144;117,144;125,144;          135,141;147,138;157,136;163,135;172,136;          187,116;183,114;174,119;165,122;156,126;          146,129;136,132;125,134;118,135;      #4PR: 172,136;160,191;155,200;147,210;138,218;          128,226;118,233;109,238;101,243;92,246;          83,250;72,253;67,255;75,254;84,253;          93,252;102,249;110,246;119,243;127,239;          135,233;143,227;151,220;156,214;162,208;          169,198;191,147;203,133;187,116;      #2PR: 105,157;114,157;119,159;124,160;130,165;          136,169;145,177;153,185;160,191;169,198;          176,203;184,208;192,214;200,218;208,223;          217,227;226,230;236,235;246,238;257,241;          267,244;278,246;289,248;289,249;280,249;          273,251;266,252;256,253;247,254;238,255;          229,256;220,256;212,257;203,249;193,239;          182,228;173,219;166,213;162,208;155,200;          146,192;139,185;129,178;121,170;112,164;";
+					if (strokeData != null) 
+						dv.setStrokeData(strokeData);
+					else 
+						dv.setStrokeData(you);
+					
+					Toast.makeText(getApplicationContext(),
+							"stroke animation for " + item, Toast.LENGTH_LONG).show();
+					
+					AboutDialog about = new AboutDialog(getApplicationContext(), dv);
+					about.setTitle("XHandwriting demo: " + item);
+					about.setStrokeData(strokeData);
+					about.show();  // show stroke animation on Dialog 
 				}
 				
 				view.setSelected(true);
@@ -188,17 +222,52 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 			}
 		});
 		
+		Log.i(TAG, "loadStrokeDataFile...");
 		// handwriting init
-		loadStrokeDataFile();
+		loadStrokeDataFile();  // for handwriting recognition
 		
-		// load mp3 pin yin audio files - zip file 
+		// preload mp3 pin yin audio files - zip file 
 		//loadPinyinAudioFiles();
 		
+		Log.i(TAG, "initMatcherThread...");
 		// start the matcher thread
 		initMatcherThread();		
 
+		Log.i(TAG, "loadStrokeAnimationDataFile...");
+		// read in stroke data file -- for stroke animation
+		loadStrokeAnimationDataFile();
+		Log.i(TAG, "loadStrokeAnimationDataFile DONE.");
 	}
+	
+	public void loadStrokeAnimationDataFile() {
+		try {
+			AssetManager am = this.getAssets();
+			InputStream is = am.open("zdtStrokeDataDemo.txt");
+			InputStreamReader inputStreamReader = new InputStreamReader(is,
+					"UTF-8");
+			BufferedReader reader = new BufferedReader(inputStreamReader);
 
+			String line;
+			while ((line = reader.readLine()) != null) {
+				Pattern pat = Pattern.compile("([^\\s])\\t(.+)");
+				Matcher m = pat.matcher(line);
+				if (m.find()) {
+					String character = m.group(1);
+					String strokeData = m.group(2);
+					strokeDataMap.put(character, strokeData);
+				}
+			}
+
+			Log.i(TAG, "loaded stroke characters: "
+					+ strokeDataMap.keySet().size());
+			Log.i(TAG,
+					"loaded chinese characters: "
+							+ Arrays.toString(strokeDataMap.keySet().toArray()));
+		} catch (Exception io) {
+
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -286,67 +355,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 		}
 		return true;
 	}
-	
-	public class DrawPanel extends SurfaceView implements Runnable {
-
-		Thread t = null;
-		SurfaceHolder holder;
-		boolean isItOk = false;
-
-		public DrawPanel(Context context) {
-			super(context);
-			// TODO Auto-generated constructor stub
-			holder = getHolder();
-		}
-
-		@SuppressLint("WrongCall")
-		public void run() {
-			// TODO Auto-generated method stub
-			while (isItOk == true) {
-
-				if (!holder.getSurface().isValid()) {
-					continue;
-				}
-
-				Canvas c = holder.lockCanvas();
-				c.drawARGB(255, 0, 0, 0);
-				onDraw(c);
-				holder.unlockCanvasAndPost(c);
-			}
-		}
-
-		@Override
-		protected void onDraw(Canvas canvas) {
-			// TODO Auto-generated method stub
-			super.onDraw(canvas);
-			synchronized (pointsToDraw) {
-				for (Path path : pointsToDraw) {
-					canvas.drawPath(path, mPaint);
-				}
-			}
-		}
-
-		public void pause() {
-			isItOk = false;
-			while (true) {
-				try {
-					t.join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				break;
-			}
-			t = null;
-		}
-
-		public void resume() {
-			isItOk = true;
-			t = new Thread(this);
-			t.start();
-
-		}
-	}
-	
+		
 	public void onClear(View v) {
 		synchronized(this.pointsToDraw) {
 			pointsToDraw.clear();
@@ -640,5 +649,70 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 
 		}
 		return true;
+	}
+	
+	// bring up animation dialog
+    public void clickAbout(View unused) {        
+        About.show(this);
+    }
+    
+	public class DrawPanel extends SurfaceView implements Runnable {
+
+		Thread t = null;
+		SurfaceHolder holder;
+		boolean isItOk = false;
+
+		public DrawPanel(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+			holder = getHolder();
+		}
+
+		@SuppressLint("WrongCall")
+		public void run() {
+			// TODO Auto-generated method stub
+			while (isItOk == true) {
+
+				if (!holder.getSurface().isValid()) {
+					continue;
+				}
+
+				Canvas c = holder.lockCanvas();
+				c.drawARGB(255, 0, 0, 0);
+				onDraw(c);
+				holder.unlockCanvasAndPost(c);
+			}
+		}
+
+		@Override
+		protected void onDraw(Canvas canvas) {
+			// TODO Auto-generated method stub
+			super.onDraw(canvas);
+			synchronized (pointsToDraw) {
+				for (Path path : pointsToDraw) {
+					canvas.drawPath(path, mPaint);
+				}
+			}
+		}
+
+		public void pause() {
+			isItOk = false;
+			while (true) {
+				try {
+					t.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				break;
+			}
+			t = null;
+		}
+
+		public void resume() {
+			isItOk = true;
+			t = new Thread(this);
+			t.start();
+
+		}
 	}
 }

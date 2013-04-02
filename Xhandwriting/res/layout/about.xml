@@ -28,4 +28,14 @@ android:layout_span="2"
 android:layout_margin="8dip"
 android:textColor="#cccccc" />
 </TableRow>
+<TableRow>
+    <FrameLayout
+        android:id="@+id/strokesview1"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_gravity="fill_vertical"
+        android:layout_weight="0.45"
+        android:background="@drawable/cube" >
+    </FrameLayout>
+</TableRow>    
 </TableLayout>

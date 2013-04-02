@@ -8,4 +8,8 @@
     <string name="clear">Clear</string>
     <string name="textview">TextView</string>
 
+    <string name="about_title">XHandWriting</string>
+    <string name="qr_title">QR Code for XHandWriting</string>
+    <string name="about_text">About</string>
+    
 </resources>

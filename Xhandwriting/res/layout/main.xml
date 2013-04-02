@@ -27,6 +27,15 @@
             android:layout_height="wrap_content"
             android:onClick="onClear"
             android:text="@string/clear" />
+
+        <Button
+            android:id="@+id/about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:onClick="clickAbout"
+            android:text="@string/about_text" />
+
     </LinearLayout>
 
     <LinearLayout
