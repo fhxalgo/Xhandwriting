@@ -1,1 +1,28 @@
 git help: http://forum.xda-developers.com/showthread.php?t=1877040
+
+04-01 23:45:34.195: I/com.fhx.app.xhandwriting.Xhandwriting(804): handleMatchedWords: [一, 二, 入, 卜, 厂, 十, 八, 人, 乙, 丁, 刀, 引, 七, 九, 力]
+04-01 23:45:38.945: I/CStrokeView(804): # of cstrokes added: 5
+04-01 23:45:38.945: I/CStrokeView(804): drawStrokesOnCanvas: 5
+04-01 23:45:38.965: I/CStrokeView(804): drawing stroke 0
+04-01 23:45:38.965: I/CStrokeView(804): drawCurrentStroke: 0, direction=1, draw=false
+04-01 23:45:38.965: I/CStrokeView(804):  leftToRightStroke(begin): Rect(61, 55 - 224, 91)
+04-01 23:45:38.965: I/TAG(804): left=61,tom=55,right=224,bottom=91,width=163,height=36
+04-01 23:45:39.935: I/CStrokeView(804):  leftToRightStroke(end): 2103
+04-01 23:45:39.975: D/AndroidRuntime(804): Shutting down VM
+04-01 23:45:39.975: W/dalvikvm(804): threadid=1: thread exiting with uncaught exception (group=0x40a13300)
+04-01 23:45:40.087: E/AndroidRuntime(804): FATAL EXCEPTION: main
+04-01 23:45:40.087: E/AndroidRuntime(804): java.lang.NullPointerException
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at com.fhxapp.cstroke.CStrokeView.drawStrokesOnCanvas(CStrokeView.java:106)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at com.fhxapp.cstroke.CStrokeView.setStrokeData(CStrokeView.java:92)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at com.fhx.app.xhandwriting.Xhandwriting$2.onItemLongClick(Xhandwriting.java:209)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at android.widget.AbsListView.performLongPress(AbsListView.java:2925)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at android.widget.AbsListView$CheckForLongPress.run(AbsListView.java:2875)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at android.os.Handler.handleCallback(Handler.java:615)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at android.os.Handler.dispatchMessage(Handler.java:92)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at android.os.Looper.loop(Looper.java:137)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at android.app.ActivityThread.main(ActivityThread.java:4745)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at java.lang.reflect.Method.invokeNative(Native Method)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at java.lang.reflect.Method.invoke(Method.java:511)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:786)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:553)
+04-01 23:45:40.087: E/AndroidRuntime(804): 	at dalvik.system.NativeStart.main(Native Method)

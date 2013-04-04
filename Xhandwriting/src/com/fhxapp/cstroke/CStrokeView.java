@@ -63,6 +63,9 @@ public class CStrokeView extends SurfaceView implements SurfaceHolder.Callback {
 
 		// Set thread
 		getHolder().addCallback(this);
+		
+		thread = new DrawThread(getHolder(), this);
+		thread.setRunning(true);		
 
 		setFocusable(true);
 
@@ -153,6 +156,7 @@ public class CStrokeView extends SurfaceView implements SurfaceHolder.Callback {
 
 	@Override
 	public void onDraw(Canvas canvas) {
+		Log.i(TAG, "onDraw(Canvas) canvas: " + canvas);
 		super.onDraw(canvas);
 
 		paint.setStyle(Paint.Style.FILL);
@@ -203,8 +207,8 @@ public class CStrokeView extends SurfaceView implements SurfaceHolder.Callback {
 
 	// @Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		thread = new DrawThread(getHolder(), this);
-		thread.setRunning(true);
+//		thread = new DrawThread(getHolder(), this);
+//		thread.setRunning(true);
 		// thread.start();
 	}
 
