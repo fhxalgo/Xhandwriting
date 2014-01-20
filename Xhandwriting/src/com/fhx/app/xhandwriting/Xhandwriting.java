@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -198,7 +196,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 					// show stroke animation
 					dv = new CStrokeView(getApplicationContext());
 					
-					AboutDialog about = new AboutDialog(getApplicationContext(), dv);
+					AnimationDialog about = new AnimationDialog(getApplicationContext(), dv);
 					about.setTitle("XHandwriting demo: " + item);
 					about.show();  // show stroke animation on Dialog 
 
@@ -637,7 +635,7 @@ public class Xhandwriting extends Activity implements OnTouchListener {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case ABOUT:
-			AboutDialog about = new AboutDialog(this);
+			AnimationDialog about = new AnimationDialog(this);
 			about.setTitle("XHandwriting demo");
 			about.show();
 

@@ -16,17 +16,17 @@ import android.widget.TextView;
 
 import com.fhxapp.cstroke.CStrokeView;
 
-public class AboutDialog extends Dialog {
+public class AnimationDialog extends Dialog {
 	private static Context mContext = null;
 	private CStrokeView mStrokeView;
 	private String mStrokeData;
 	
-	public AboutDialog(Context context) {
+	public AnimationDialog(Context context) {
 		super(context);
 		mContext = context;
 	}
 	
-	public AboutDialog(Context context, CStrokeView dv) {
+	public AnimationDialog(Context context, CStrokeView dv) {
 		super(context);
 		mContext = context;
 		mStrokeView = dv;
@@ -46,7 +46,7 @@ public class AboutDialog extends Dialog {
 		tv.setLinkTextColor(Color.WHITE);
 		Linkify.addLinks(tv, Linkify.ALL);
 		FrameLayout ll = (FrameLayout) findViewById(R.id.strokesview1);		
-		ll.addView(mStrokeView);
+		//ll.addView(mStrokeView);
 	}
 
 	public static String readRawTextFile(int id) {
